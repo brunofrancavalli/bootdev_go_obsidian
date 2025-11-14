@@ -199,3 +199,18 @@ for i, fruit := range fruits {
 // 1 banana
 // 2 grape
 ```
+
+## Slice of Slices
+
+# Slice of Slices
+
+Slices can hold other slices, effectively creating a [matrix](https://en.wikipedia.org/wiki/Matrix_\(mathematics\)), or a 2D slice.
+
+```go
+rows := [][]int{}
+rows = append(rows, []int{1, 2, 3})
+rows = append(rows, []int{4, 5, 6})
+fmt.Println(rows)
+// [[1 2 3] [4 5 6]]
+```
+
