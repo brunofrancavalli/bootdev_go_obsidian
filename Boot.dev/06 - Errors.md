@@ -3,7 +3,7 @@
 
 Interface for error
 
-```
+```go
 type error interface {
     Error() string
 }
@@ -11,7 +11,7 @@ type error interface {
 
 How it works:
 
-```
+```go
 // Atoi converts a stringified number to an integer
 i, err := strconv.Atoi("42b")
 if err != nil {
@@ -29,7 +29,7 @@ if err != nil {
 ## 3 The Error Interface
 Because errors are just interfaces, you can build your own custom types that implement the error interface. Here's an example of a userError struct that implements the error interface:
 
-```
+```go
 type userError struct {
     name string
 }
@@ -37,10 +37,10 @@ type userError struct {
 func (e userError) Error() string {
     return fmt.Sprintf("%v has a problem with their account", e.name)
 }
-```
+``` 
 It can then be used as an error:
 
-```
+```go
 func sendSMS(msg, userName string) error {
     if !canSendToUser(userName) {
         return userError{name: userName}
@@ -54,7 +54,7 @@ The Go standard library provides an "errors" package that makes it easy to deal 
 
 Read the godoc for the errors.New() function, but here's a simple example:
 
-```
+``` go
 var err error = errors.New("something went wrong")
 ```
 
@@ -63,7 +63,7 @@ var err error = errors.New("something went wrong")
 
 Avoid panic, it should never be used
 
-```
+```go
 func enrichUser(userID string) User {
     user, err := getUser(userID)
     if err != nil {
