@@ -154,6 +154,12 @@ import "fmt"
 fmt.Printf(`Message: "%s" Cost: %v cents`, message, cost)
 ```
 
+```go
+name := "Hello"
+firstRuneOfName = []rune(name)[0]
+fmt.printLn firstRuneOfName
+// H
+```
 ## Basic Variables
 
 | Variable Name | Description                           |
