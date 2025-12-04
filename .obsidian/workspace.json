@@ -214,12 +214,12 @@
   },
   "active": "17dc7e38f72e9746",
   "lastOpenFiles": [
-    "Boot.dev/09 - Maps.md",
-    "Boot.dev/10 - Pointers.md",
-    "Boot.dev/02 - Conditionals.md",
-    "Boot.dev/01 - Variable.md",
-    "Boot.dev/07 - Loops.md",
     "Boot.dev/08 - Slices.md",
+    "Boot.dev/07 - Loops.md",
+    "Boot.dev/01 - Variable.md",
+    "Boot.dev/10 - Pointers.md",
+    "Boot.dev/09 - Maps.md",
+    "Boot.dev/02 - Conditionals.md",
     "Boot.dev/04 - Structs.md",
     "Boot.dev/06 - Errors.md"
   ]

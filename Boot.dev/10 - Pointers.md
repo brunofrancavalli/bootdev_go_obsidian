@@ -59,3 +59,154 @@ fmt.Printf("value of myString: %s\n", *myStringPtr) // read myString through the
 ```
 
 Unlike C, Go has no pointer arithmetic (which is covered in our [Learn Memory Management course](https://www.boot.dev/courses/learn-memory-management) if you haven't taken it already).
+
+# Pass by Reference
+
+Functions in Go generally pass variables by value, meaning that functions receive a copy of most non-composite types:
+
+```go
+func increment(x int) {
+    x++
+    fmt.Println(x)
+    // 6
+}
+
+
+func main() {
+    x := 5
+    increment(x)
+    fmt.Println(x)
+    // 5
+}
+```
+
+The `main` function still prints `5` because the `increment` function received a _copy_ of `x`.
+
+One of the most common use cases for pointers in Go is to pass variables by reference, meaning that the function receives the _address_ of the original variable, not a copy of the value. This allows the function to **update the original variable's value**.
+
+```go
+func increment(x *int) {
+    *x++
+    fmt.Println(*x)
+    // 6
+}
+
+func main() {
+    x := 5
+    increment(&x)
+    fmt.Println(x)
+    // 6
+}
+```
+
+## Fields of Pointers
+
+When your function receives a pointer to a struct, you might try to access a field like this and encounter an error:
+
+```go
+msgTotal := *analytics.MessagesTotal
+```
+
+Instead, access it – like you'd normally do — using a [selector expression](https://go.dev/ref/spec#Selectors).
+
+```go
+msgTotal := analytics.MessagesTotal
+```
+
+This approach is the recommended, simplest way to access struct fields in Go, and is shorthand for:
+
+```go
+(*analytics).MessagesTotal
+```
+
+## Assignment
+
+Boots
+
+Spellbook
+
+Community
+
+![Boots](https://www.boot.dev/_nuxt/new_boots_profile.DriFHGho.webp)
+
+**Need help?** I, Boots the Bane of End-Users, can assist... _for a price_.
+
+Start Voice Chat
+
+- main.go
+
+- main_test.go
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+package main
+
+  
+
+type Analytics struct {
+
+MessagesTotal int
+
+MessagesFailed int
+
+MessagesSucceeded int
+
+}
+
+  
+
+type Message struct {
+
+Recipient string
+
+Success bool
+
+}
+
+  
+
+// don't touch above this line
+
+  
+
+// ?
+
+  
+
+Submit
+
+Run
+
+Solution
