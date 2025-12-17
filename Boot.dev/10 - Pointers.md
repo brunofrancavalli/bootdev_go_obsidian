@@ -119,94 +119,78 @@ This approach is the recommended, simplest way to access struct fields in Go, an
 (*analytics).MessagesTotal
 ```
 
-## Assignment
+# Pointer Receivers
 
-Boots
+A receiver type on a method can be a pointer.
 
-Spellbook
+Methods with pointer receivers can modify the value to which the receiver points. Since methods often need to modify their receiver, pointer receivers are _more common_ than value receivers. However, methods with pointer receivers don't require that a pointer is used to call the method. The pointer will automatically be derived from the value.
 
-Community
+## Pointer Receiver
 
-![Boots](https://www.boot.dev/_nuxt/new_boots_profile.DriFHGho.webp)
-
-**Need help?** I, Boots the Bane of End-Users, can assist... _for a price_.
-
-Start Voice Chat
-
-- main.go
-
-- main_test.go
-
-1
-
-2
-
-3
-
-4
-
-5
-
-6
-
-7
-
-8
-
-9
-
-10
-
-11
-
-12
-
-13
-
-14
-
-15
-
-16
-
-17
-
-package main
-
-  
-
-type Analytics struct {
-
-MessagesTotal int
-
-MessagesFailed int
-
-MessagesSucceeded int
-
+```go
+type car struct {
+	color string
 }
 
-  
-
-type Message struct {
-
-Recipient string
-
-Success bool
-
+func (c *car) setColor(color string) {
+	c.color = color
 }
 
-  
+func main() {
+	c := car{
+		color: "white",
+	}
+	c.setColor("blue")
+	fmt.Println(c.color)
+	// prints "blue"
+}
+```
+## Non-Pointer Receiver
 
-// don't touch above this line
+```go
+type car struct {
+	color string
+}
 
-  
+func (c car) setColor(color string) {
+	c.color = color
+}
 
-// ?
+func main() {
+	c := car{
+		color: "white",
+	}
+	c.setColor("blue")
+	fmt.Println(c.color)
+	// prints "white"
+}
+```
+# Pointer Receiver Code
 
-  
+Methods with pointer receivers don't require that a pointer is used to call the method. The pointer will automatically be derived from the value.
 
-Submit
+```go
+type circle struct {
+	x int
+	y int
+    radius int
+}
 
-Run
+func (c *circle) grow() {
+    c.radius *= 2
+}
 
-Solution
+func main() {
+    c := circle{
+        x: 1,
+        y: 2,
+        radius: 4,
+    }
+
+    // notice c is not a pointer in the calling function
+    // but the method still gains access to a pointer to c
+    c.grow()
+    fmt.Println(c.radius)
+    // prints 8
+}
+```
