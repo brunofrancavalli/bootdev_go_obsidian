@@ -221,3 +221,28 @@ Once the value becomes large enough that copying is the greater problem, it can 
 _One of the reasons Go programs tend to use less memory than Java and C# programs is that Go tends to allocate more on the stack._
 
 If you're curious to dig deeper, I ran [a benchmark and wrote about it](https://blog.boot.dev/golang/pointers-faster-than-values).
+
+# Packages
+
+Every Go program is made up of packages.
+
+You have probably noticed the `package main` at the top of all the programs you have been writing.
+
+A package named "main" has an entrypoint at the `main()` function. A `main` package is compiled into an executable program.
+
+A package by any other name is a "library package". Libraries have no entry point. Libraries simply export functionality that can be used by other packages. For example:
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+)
+
+func main() {
+	fmt.Println("My favorite number is", rand.Intn(10))
+}
+```
+
+This program is an executable. It is a "main" package and _imports_ from the `fmt` and `math/rand` library packages.
