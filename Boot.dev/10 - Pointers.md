@@ -246,3 +246,146 @@ func main() {
 ```
 
 This program is an executable. It is a "main" package and _imports_ from the `fmt` and `math/rand` library packages.
+
+# Package Naming
+
+By _convention_, a package's name is the same as the last element of its import path. For instance, the `math/rand` package comprises files that begin with:
+
+```go
+package rand
+```
+
+That said, package names aren't _required_ to match their import path. For example, I could write a new package with the path `github.com/textio/rand` and name the package `random`:
+
+```go
+package random
+```
+
+While the above is possible, it is discouraged for the sake of consistency.
+
+## One Package / Directory
+
+A directory of Go code can have **at most** one package. All `.go` files in a single directory must all belong to the same package. If they don't, an error will be thrown by the compiler. This is true for main and library packages alike.
+
+# Modules
+
+Go programs are organized into _packages_. A package is a directory of Go code that's all compiled together. Functions, types, variables, and constants defined in one source file are visible to **all other source files within the same package (directory)**.
+
+A _repository_ contains one or more _modules_. A module is a collection of Go packages that are released together.
+
+![](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/IyRpjCm-1280x544.png)
+
+## One Module Per Repo (Usually)
+
+A file named `go.mod` at the root of a project declares the module. It contains:
+
+- The module path
+- The version of the Go language your project requires
+- Optionally, any external package dependencies your project has
+
+The module path is just the import path prefix for all packages within the module. Here's an example of a `go.mod` file:
+
+```
+module github.com/bootdotdev/exampleproject
+
+go 1.25.1
+
+require github.com/google/examplepackage v1.3.0
+```
+
+Each module's path not only serves as an import path prefix for the packages within but _also indicates where the go command should look to download it_. For example, to download the module `golang.org/x/tools`, the go command would consult the repository located at [https://golang.org/x/tools](https://golang.org/x/tools).
+
+> An "import path" is a string used to import a package. A package's import path is its module path joined with its subdirectory within the module. For example, the module `github.com/google/go-cmp` contains a package in the directory `cmp/`. That package's import path is `github.com/google/go-cmp/cmp`. Packages in the standard library do not have a module path prefix.
+
+-- Paraphrased from [Golang.org's code organization](https://golang.org/doc/code#Organization)
+
+## Only GitHub?
+
+You don't _need_ to publish your code to a remote repository before you can build it. A module can be defined locally without belonging to a remote repository. However, it's a good habit to keep a copy of all your projects on _some_ remote server, like GitHub.
+
+# Go Environment
+
+Let's clear up a few points before you start writing Go locally.
+
+## Directory Structure
+
+To recap how packages and modules work in your project directory structure:
+
+- You will have many _git repositories_ on your machine (typically one per project).
+- Each repository is typically a single _module_.
+- Each module contains one or more _packages_
+- Each package consists of one or more _Go source files_ in a single directory.
+
+The path to a package's directory determines its _import path_ and where it can be downloaded from if you decide to host it on a remote version control system like [GitHub](https://github.com/) or [GitLab](https://gitlab.com/).
+
+## A Note About GOPATH
+
+The `$GOPATH` environment variable will be set by default somewhere on your machine (typically in the home directory, `~/go`). Since we will be working in the new "Go modules" setup, you _don't need to worry about that_. If you read something online about setting up your `GOPATH`, that documentation is probably out of date.
+
+These days you should _avoid_ working in the `$GOPATH/src` directory. Again, that's the old way of doing things and can cause unexpected issues, so better to just avoid it.
+
+## Get Into Your Workspace
+
+Navigate to a location on your machine where you want to store some code. For example, I store all my code in `~/workspace`, then organize it into subfolders based on the remote location. For example,
+
+`~/workspace/github.com/wagslane/go-password-validator` = [https://github.com/wagslane/go-password-validator](https://github.com/wagslane/go-password-validator)
+
+That said, you can put your code wherever you want.
+
+# Go Run
+
+The [`go run` command](https://pkg.go.dev/cmd/go#hdr-Compile_and_run_Go_program) quickly compiles and runs a Go package. The compiled binary is _not_ saved in your working directory.
+
+I typically use `go run` to do local testing, scripting and debugging.
+
+## Assignment
+
+1. [ ] Inside `hellogo`, create a new file called `main.go`.
+
+Conventionally, the file in the `main` package that contains the `main()` function is called `main.go`.
+
+2. [ ] Paste the following code into your file:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("hello world")
+}
+```
+
+3. [ ] Run the code
+
+```bash
+go run main.go
+```
+
+**Run and submit** the CLI tests from the **root of the `main` package**.
+
+## Tips
+
+_You can execute `go help run` in your shell to rtfm._
+
+# Go Build
+
+The [`go build` command](https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies) compiles go code into a single, statically linked executable program. One of the beauties of Go is that you always `go build` for production, and because the output is a statically compiled binary, you can ship it to production or end users without them needing the Go toolchain installed.
+
+Some new Go devs use `go run` on a server in production, which is a _huge_ mistake.
+
+## Assignment
+
+1. [ ] Ensure you are in your `hellogo` repo, then run:
+
+```bash
+go build
+```
+
+2. [ ] Run the new program:
+
+```bash
+./hellogo
+```
+
+**Run and submit** the CLI tests from the **root of the repo**.
