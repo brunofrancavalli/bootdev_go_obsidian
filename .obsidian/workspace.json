@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Boot.dev/11 - Packages and Modules.md",
+                "file": "Boot.dev/12 - Channels.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "11 - Packages and Modules"
+              "title": "12 - Channels"
             }
           },
           {
@@ -214,8 +214,10 @@
   },
   "active": "17dc7e38f72e9746",
   "lastOpenFiles": [
-    "Boot.dev/10 - Pointers.md",
     "Boot.dev/11 - Packages and Modules.md",
+    "Boot.dev/12 - Channels.md",
+    "Boot.dev/12-Channels",
+    "Boot.dev/10 - Pointers.md",
     "Boot.dev/03 - Functions.md",
     "Boot.dev/02 - Conditionals.md",
     "Boot.dev/08 - Slices.md",
