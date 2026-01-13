@@ -82,7 +82,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "error",
+                "query": "print",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -214,13 +214,13 @@
   },
   "active": "17dc7e38f72e9746",
   "lastOpenFiles": [
-    "Boot.dev/11 - Packages and Modules.md",
+    "Boot.dev/08 - Slices.md",
     "Boot.dev/12 - Channels.md",
+    "Boot.dev/11 - Packages and Modules.md",
     "Boot.dev/12-Channels",
     "Boot.dev/10 - Pointers.md",
     "Boot.dev/03 - Functions.md",
     "Boot.dev/02 - Conditionals.md",
-    "Boot.dev/08 - Slices.md",
     "Boot.dev/07 - Loops.md",
     "Boot.dev/01 - Variable.md",
     "Boot.dev/09 - Maps.md",

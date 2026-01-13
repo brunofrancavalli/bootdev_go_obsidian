@@ -30,3 +30,102 @@ At Textio we send _a lot_ of network requests. Each email we send must go out 
 
 Edit the `sendEmail()` function to execute its anonymous function concurrently so that the "received" message prints _after_ the "sent" message.
 
+# Channels
+
+Channels are a typed, [thread-safe](https://en.wikipedia.org/wiki/Thread_safety) queue. Channels allow different goroutines to communicate with each other.
+
+## Create a Channel
+
+Like maps and slices, channels must be created _before_ use. They also use the same `make` keyword:
+
+```go
+ch := make(chan int)
+```
+
+## Send Data to a Channel
+
+```go
+ch <- 69
+```
+
+The `<-` operator is called the _channel operator_. Data flows in the direction of the arrow. This operation will [_block_](https://en.wikipedia.org/wiki/Blocking_\(computing\)) until another goroutine is ready to receive the value.
+
+## Receive Data from a Channel
+
+```go
+v := <-ch
+```
+
+This reads and removes a value from the channel and saves it into the variable `v`. This operation will _block_ until there is a value in the channel to be read.
+
+## Reference Type
+
+Like maps and slices, channels are reference types, meaning they are passed by reference by default.
+
+```go
+func send(ch chan int) {
+    ch <- 99
+}
+
+func main() {
+    ch := make(chan int)
+    go send(ch)
+    fmt.Println(<-ch) // 99
+}
+```
+
+## Blocking and Deadlocks
+
+A [deadlock](https://yourbasic.org/golang/detect-deadlock/#:~:text=yourbasic.org%2Fgolang,look%20at%20this%20simple%20example.) is when a group of goroutines are all blocking so none of them can continue. This is a common bug that you need to watch out for in concurrent programming.
+
+# Channels
+
+In the previous lesson, we saw how we can receive values from channels like this:
+
+```go
+v := <-ch
+```
+
+However, sometimes we don't care _what_ is passed through a channel. We only care _when_ and _if_ something is passed. In that situation, we can block and wait until something is sent on a channel using the following syntax.
+
+```go
+<-ch
+```
+
+This will block until it pops a single item off the channel, then continue, discarding the item.
+
+In cases like this, [Empty structs](https://dave.cheney.net/2014/03/25/the-empty-struct) are often used as a [unary](https://en.wikipedia.org/wiki/Unary_operation) value so that the sender communicates that this is only a "signal" and not some data that is meant to be captured and used by the receiver.
+
+Here is an example:
+
+```go
+func downloadData() chan struct{} {
+	downloadDoneCh := make(chan struct{})
+
+	go func() {
+		fmt.Println("Downloading data file...")
+		time.Sleep(2 * time.Second) // simulate download time
+
+		// after the download is done, send a "signal" to the channel
+		downloadDoneCh <- struct{}{}
+	}()
+
+	return downloadDoneCh
+}
+
+func processData(downloadDoneCh chan struct{}) {
+	// any code here can run normally
+	fmt.Println("Preparing to process data...")
+
+	// block until `downloadData` sends the signal that it's done
+	<-downloadDoneCh
+
+	// any code here can assume that data download is complete
+	fmt.Println("Data download complete, starting data processing...")
+}
+
+processData(downloadData())
+// Preparing to process data...
+// Downloading data file...
+// Data download complete, starting data processing...
+```
