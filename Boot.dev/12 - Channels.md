@@ -144,54 +144,43 @@ ch := make(chan int, 100)
 
 A buffer allows the channel to hold a fixed number of values before sending blocks. This means sending on a buffered channel only blocks when the buffer is full, and receiving blocks only when the buffer is empty.
 
+# Closing Channels in Go
+
+Channels can be explicitly closed by a _sender_:
+
+```go
+ch := make(chan int)
+
+// do some stuff with the channel
+
+close(ch)
+```
+
+## Checking If a Channel Is Closed
+
+Similar to the `ok` value when accessing data in a `map`, receivers can check the `ok` value when receiving from a channel to test if a channel was closed.
+
+```go
+v, ok := <-ch
+```
+
+ok is `false` if the channel is empty and closed.
+
+## Don't Send on a Closed Channel
+
+Sending on a closed channel will cause a panic. A panic on the main goroutine will cause the entire program to crash, and a panic in any other goroutine will cause _that goroutine_ to crash.
+
+Closing isn't necessary. There's nothing wrong with leaving channels open, they'll still be garbage collected if they're unused. You should close channels to indicate explicitly to a receiver that nothing else is going to come across.
+
 ## Assignment
 
-We want to be able to send emails in _batches_. A _writing_ goroutine will write an entire batch of email messages to a buffered channel, and later, once the channel is full, a _reading_ goroutine will read all of the messages from the channel and send them out to our clients.
+At Textio we're all about keeping track of what our systems are up to with great logging and [telemetry](https://en.wikipedia.org/wiki/Observability_\(software\)#Telemetry_types).
 
-Complete the `addEmailsToQueue` function. It should create a buffered channel with a buffer large enough to store all of the `emails` it's given. It should then write the emails to the channel in order, and finally return the channel.
+The `sendReports` function sends out a batch of reports to our clients and reports back how many were sent across a channel. It closes the channel when it's done.
 
-Boots
+Complete the `countReports` function. It should:
 
-Spellbook
-
-Lessons
-
-![Boots](https://www.boot.dev/_nuxt/new_boots_profile.DriFHGho.webp)
-
-**Need help?** I, Boots the Primeval 10x Developer, can assist... _for a price_.
-
-Start Voice Chat
-
-- main.go
-
-- main_test.go
-
-1
-
-2
-
-3
-
-4
-
-5
-
-6
-
-package main
-
-  
-
-func addEmailsToQueue(emails []string) chan string {
-
-// ?
-
-}
-
-  
-
-Submit
-
-Run
-
-Solution
+- Use an infinite `for` loop to read from the channel:
+- If the channel is closed, break out of the loop
+- Otherwise, keep a running total of the number of reports sent
+- Return the total number of reports sent
