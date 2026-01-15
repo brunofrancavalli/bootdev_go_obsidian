@@ -184,3 +184,15 @@ Complete the `countReports` function. It should:
 - If the channel is closed, break out of the loop
 - Otherwise, keep a running total of the number of reports sent
 - Return the total number of reports sent
+
+# Range
+
+Similar to slices and maps, channels can be ranged over.
+
+```go
+for item := range ch {
+    // item is the next value received from the channel
+}
+```
+
+This example will receive values over the channel (blocking at each iteration if nothing new is there) and will exit only when the channel is closed.
