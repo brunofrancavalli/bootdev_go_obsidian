@@ -217,3 +217,121 @@ case s, ok := <-chStrings:
 ```
 
 The first channel with a value ready to be received will fire and its body will execute. If multiple channels are ready at the same time one is chosen randomly. The `ok` variable in the example above refers to whether or not the channel has been closed by the sender yet.
+
+# Select Default Case
+
+The `default` case in a `select` statement executes _immediately_ if no other channel has a value ready. A `default` case stops the `select` statement from blocking.
+
+```go
+select {
+case v := <-ch:
+    // use v
+default:
+    // receiving from ch would block
+    // so do something else
+}
+```
+
+## Ignoring Channels
+
+Sometimes you want to ignore a channel's value. You can do this by not binding it to a variable:
+
+```go
+select {
+case <-ch:
+    // event received; value ignored
+default:
+    // so do something else
+}
+```
+
+Alternatively, you can use the blank identifier `_` to ignore the value:
+
+```go
+select {
+case _ = <-ch:
+    // event received; value ignored
+default:
+    // so do something else
+}
+```
+
+## Tickers
+
+- [time.Tick()](https://golang.org/pkg/time/#Tick) is a standard library function that returns a channel that sends a value on a given interval.
+- [time.After()](https://golang.org/pkg/time/#After) sends a value once after the duration has passed.
+- [time.Sleep()](https://golang.org/pkg/time/#Sleep) blocks the current goroutine for the specified duration of time.
+
+The functions take a [`time.Duration`](https://pkg.go.dev/time#Duration) as an argument. For example:
+
+```go
+time.Tick(500 * time.Millisecond)
+```
+
+If you don't add `time.Millisecond` (or another unit), it will default to nanoseconds. That's — taking a wild guess here — probably faster than you want it to be.
+
+## Read-Only Channels
+
+A channel can be marked as read-only by casting it from a `chan` to a `<-chan` type. For example:
+
+```go
+func main() {
+    ch := make(chan int)
+    readCh(ch)
+}
+
+func readCh(ch <-chan int) {
+    // ch can only be read from
+    // in this function
+}
+```
+## Write-Only Channels
+
+The same goes for write-only channels, but the arrow's position moves.
+
+```go
+func writeCh(ch chan<- int) {
+    // ch can only be written to
+    // in this function
+}
+```
+
+# Channels Review
+
+Here are a few extra things you should understand about channels from [Dave Cheney's awesome article](https://dave.cheney.net/2014/03/19/channel-axioms).
+
+## A Declared but Uninitialized Channel Is Nil Just Like a Slice
+
+```go
+var s []int       // s is nil
+var c chan string // c is nil
+
+var s = make([]int, 5) // s is initialized and not nil
+var c = make(chan int) // c is initialized and not nil
+```
+## A Send to a Nil Channel Blocks Forever
+
+```go
+var c chan string        // c is nil
+c <- "let's get started" // blocks
+```
+## A Receive from a Nil Channel Blocks Forever
+
+```go
+var c chan string // c is nil
+fmt.Println(<-c)  // blocks
+```
+## A Send to a Closed Channel Panics
+
+```go
+var c = make(chan int, 100)
+close(c)
+c <- 1 // panic: send on closed channel
+```
+## A Receive from a Closed Channel Returns the Zero Value Immediately
+
+```go
+var c = make(chan int, 100)
+close(c)
+fmt.Println(<-c) // 0
+```
