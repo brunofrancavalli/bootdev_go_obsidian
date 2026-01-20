@@ -38,170 +38,116 @@ Now, it's worth pointing out that our execution engine on Boot.dev uses web asse
 
 In reality, any Go code you write _may or may not_ run on a single-core machine, so it's always best to write your code so that it is safe no matter which hardware it runs on.
 
-Boots
+# Mutex Review
 
-Spellbook
+The principal problem that mutexes help us avoid is the _concurrent read/write problem_. This problem arises when one thread is writing to a variable while another thread is reading from that same variable _at the same time_.
 
-Lessons
+When this happens, a Go program will panic because the reader could be reading bad data while it's being mutated in place.
 
-![Boots](https://www.boot.dev/_nuxt/new_boots_profile.DriFHGho.webp)
+![](https://storage.googleapis.com/qvault-webapp-dynamic-assets/course_assets/bwBI11n-700x235.png)
 
-**Need help?** I, Boots the Gormless Glutton, can assist... _for a price_.
+## Mutex Example
 
-Start Voice Chat
-
-- main.go
-
-- main_test.go
-
-1
-
-2
-
-3
-
-4
-
-5
-
-6
-
-7
-
-8
-
-9
-
-10
-
-11
-
-12
-
-13
-
-14
-
-15
-
-16
-
-17
-
-18
-
-19
-
-20
-
-21
-
-22
-
-23
-
-24
-
-25
-
-26
-
-27
-
-28
-
-29
-
-30
-
-31
-
-32
-
-33
-
-34
-
-35
-
-36
-
+```go
 package main
 
-  
-
 import (
-
-"fmt"
-
-"sync"
-
-"testing"
-
+	"fmt"
 )
 
-  
+func main() {
+	m := map[int]int{}
+	go writeLoop(m)
+	go readLoop(m)
 
-func Test(t *testing.T) {
-
-type testCase struct {
-
-email string
-
-count int
-
+	// stop program from exiting, must be killed
+	block := make(chan struct{})
+	<-block
 }
 
-  
-
-runCases := []testCase{
-
-{"norman@bates.com", 23},
-
-{"marion@bates.com", 67},
-
+func writeLoop(m map[int]int) {
+	for {
+		for i := 0; i < 100; i++ {
+			m[i] = i
+		}
+	}
 }
 
-  
+func readLoop(m map[int]int) {
+	for {
+		for k, v := range m {
+			fmt.Println(k, "-", v)
+		}
+	}
+}
+```
 
-submitCases := append(runCases, []testCase{
+The example above creates a map, then starts two goroutines which each have access to the map. One goroutine continuously mutates the values stored in the map, while the other prints the values it finds in the map.
 
-{"lila@bates.com", 31},
+If we run the program on a multi-core machine, we get the following output: `fatal error: concurrent map iteration and map write`
 
-{"sam@bates.com", 453},
+In Go, it isn't safe to read from and write to a map at the same time.
 
-}...)
+## Mutexes to the Rescue
 
-  
+```go
+package main
 
-testCases := runCases
+import (
+	"fmt"
+	"sync"
+)
 
-if withSubmit {
+func main() {
+	m := map[int]int{}
 
-testCases = submitCases
+	mu := &sync.Mutex{}
 
+	go writeLoop(m, mu)
+	go readLoop(m, mu)
+
+	// stop program from exiting, must be killed
+	block := make(chan struct{})
+	<-block
 }
 
-  
+func writeLoop(m map[int]int, mu *sync.Mutex) {
+	for {
+		for i := 0; i < 100; i++ {
+			mu.Lock()
+			m[i] = i
+			mu.Unlock()
+		}
+	}
+}
 
-skipped := len(submitCases) - len(testCases)
+func readLoop(m map[int]int, mu *sync.Mutex) {
+	for {
+		mu.Lock()
+		for k, v := range m {
+			fmt.Println(k, "-", v)
+		}
+		mu.Unlock()
+	}
+}
+```
 
-  
+In this example, we added a `sync.Mutex{}` and named it `mu`. In the write loop, the `Lock()` method is called before writing, and then the `Unlock()` is called when we're done. This Lock/Unlock sequence ensures that no other threads can `Lock()` the mutex while _we_ have it locked – any other threads attempting to `Lock()` will block and wait until we `Unlock()`.
 
-passCount := 0
+In the reader, we `Lock()` before iterating over the map, and likewise `Unlock()` when we're done. Now the threads share the memory safely!
 
-failCount := 0
+# RW Mutex
 
-  
+The standard library also exposes a [sync.RWMutex](https://golang.org/pkg/sync/#RWMutex)
 
-for _, test := range testCases {
+In addition to these methods:
 
-sc := safeCounter{
+- [Lock()](https://golang.org/pkg/sync/#Mutex.Lock)
+- [Unlock()](https://golang.org/pkg/sync/#Mutex.Unlock)
 
-  
+The `sync.RWMutex` also has these methods for concurrent reads:
 
-Submit
+- [RLock()](https://golang.org/pkg/sync/#RWMutex.RLock)
+- [RUnlock()](https://golang.org/pkg/sync/#RWMutex.RUnlock)
 
-Run
-
-Solution
+The `sync.RWMutex` improves performance in read-intensive processes. Multiple goroutines can safely read from the map simultaneously, as many `RLock()` calls can occur at the same time. However, only one goroutine can hold a `Lock()`, and during this time, all `RLock()` operations are blocked.
