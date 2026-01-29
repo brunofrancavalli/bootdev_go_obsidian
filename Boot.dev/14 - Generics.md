@@ -71,3 +71,175 @@ Generics give Go developers an elegant way to write amazing utility packages. Wh
 Go places an emphasis on simplicity. In other words, Go has purposefully left out many features to provide its best feature: being simple and easy to work with.
 
 According to [historical data from Go surveys](https://go.dev/blog/survey2020-results), Go’s lack of generics has always been listed as one of the top three biggest issues with the language. At a certain point, the drawbacks associated with the lack of a feature like generics justify adding complexity to the language.
+
+# Constraints
+
+Sometimes you need your generic function to know _something_ about the types it operates on. The example we used in the first exercise didn't need to know _anything_ about the types in the slice, so we used the built-in `any` constraint:
+
+```go
+func splitAnySlice[T any](s []T) ([]T, []T) {
+    mid := len(s)/2
+    return s[:mid], s[mid:]
+}
+```
+
+Constraints are just interfaces that allow us to write generics that only operate within the constraints of a given interface type. In the example above, the `any` constraint is the same as the empty interface because it means the type in question can be _anything_.
+
+## Creating a Custom Constraint
+
+Let's take a look at the example of a `concat` function. It takes a slice of values and concatenates the values into a string. This should work with _any type that can represent itself as a string_, even if it's not a string under the hood. For example, a `user` struct can have a `.String()` that returns a string with the user's name and age.
+
+```go
+type stringer interface {
+    String() string
+}
+
+func concat[T stringer](vals []T) string {
+    result := ""
+    for _, val := range vals {
+        // this is where the .String() method
+        // is used. That's why we need a more specific
+        // constraint instead of the any constraint
+        result += val.String()
+    }
+    return result
+}
+```
+
+# Interface Type Lists
+
+When generics were released, a new way of writing interfaces was also released at the same time!
+
+Traditional interfaces in Go are **method-based**: a type satisfies an interface if it has the required methods.
+
+With generics, we also got **type-set (type-list) interfaces**. Instead of listing methods, they list the concrete (or underlying) types that are allowed. These are mostly used as **constraints on type parameters**.
+
+For example, to use `<` and `>` on a type parameter `T`, the compiler must know `T` is ordered. A type-list interface spells out exactly which types count as ordered:
+
+```go
+// Ordered matches any type that supports <, <=, >, and >=.
+type Ordered interface {
+    ~int | ~int8 | ~int16 | ~int32 | ~int64 |
+        ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+        ~float32 | ~float64 |
+        ~string
+}
+
+// Because T is constrained by Ordered, the compiler knows
+// that < is valid for any T used with this function.
+func Min[T Ordered](a, b T) T {
+    if a < b {
+        return a
+    }
+    return b
+}
+```
+
+# Parametric Constraints
+
+Your interface definitions, which can later be used as constraints, can accept [type parameters](https://go.dev/tour/generics/1) as well.
+
+```go
+// The store interface represents a store that sells products.
+// It takes a type parameter P that represents the type of products the store sells.
+type store[P product] interface {
+	Sell(P)
+}
+
+type product interface {
+	Price() float64
+	Name() string
+}
+
+type book struct {
+	title  string
+	author string
+	price  float64
+}
+
+func (b book) Price() float64 {
+	return b.price
+}
+
+func (b book) Name() string {
+	return fmt.Sprintf("%s by %s", b.title, b.author)
+}
+
+type toy struct {
+	name  string
+	price float64
+}
+
+func (t toy) Price() float64 {
+	return t.price
+}
+
+func (t toy) Name() string {
+	return t.name
+}
+
+// The bookStore struct represents a store that sells books.
+type bookStore struct {
+	booksSold []book
+}
+
+// Sell adds a book to the bookStore's inventory.
+func (bs *bookStore) Sell(b book) {
+	bs.booksSold = append(bs.booksSold, b)
+}
+
+// The toyStore struct represents a store that sells toys.
+type toyStore struct {
+	toysSold []toy
+}
+
+// Sell adds a toy to the toyStore's inventory.
+func (ts *toyStore) Sell(t toy) {
+	ts.toysSold = append(ts.toysSold, t)
+}
+
+// sellProducts takes a store and a slice of products and sells
+// each product one by one.
+func sellProducts[P product](s store[P], products []P) {
+	for _, p := range products {
+		s.Sell(p)
+	}
+}
+
+func main() {
+	bs := bookStore{
+		booksSold: []book{},
+	}
+
+    // By passing in "book" as a type parameter, we can use the sellProducts function to sell books in a bookStore
+	sellProducts[book](&bs, []book{
+		{
+			title:  "The Hobbit",
+			author: "J.R.R. Tolkien",
+			price:  10.0,
+		},
+		{
+			title:  "The Lord of the Rings",
+			author: "J.R.R. Tolkien",
+			price:  20.0,
+		},
+	})
+	fmt.Println(bs.booksSold)
+
+    // We can then do the same for toys
+	ts := toyStore{
+		toysSold: []toy{},
+	}
+	sellProducts[toy](&ts, []toy{
+		{
+			name:  "LEGO bricks",
+			price: 10.0,
+		},
+		{
+			name:  "Barbie",
+			price: 20.0,
+		},
+	})
+	fmt.Println(ts.toysSold)
+}
+```

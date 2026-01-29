@@ -87,3 +87,4 @@ func main() {
 
 I use error values for all "normal" error handling, and if I have a truly unrecoverable error, I use log.Fatal to print a message and exit the program.
 
+
